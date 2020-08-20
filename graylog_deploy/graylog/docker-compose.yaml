@@ -1,0 +1,31 @@
+version: '2'
+services:
+  mongodb:
+    image: mongo:3
+    restart: always
+    volumes:
+      - /srv/mongodb/data:/data/db
+    network_mode: "host"
+    command: --bind_ip localhost
+
+  graylog:
+    image: graylog/graylog:3.3.1
+    restart: always
+    volumes:
+      - /srv/graylog/journal:/usr/share/graylog/data/journal
+#      - ./config:/usr/share/graylog/data/config
+    environment:
+      - GRAYLOG_PASSWORD_SECRET=faajdgajfgjfgjdsgfjgjsgdfjdgfjssdfdsfsdf
+      # User: admin Password: ...
+      # generate sha2: echo -n "Enter Password: " && head -1 </dev/stdin | tr -d '\n' | sha256sum | cut -d" " -f1
+      - GRAYLOG_ROOT_PASSWORD_SHA2=<make new pass hash>
+      - GRAYLOG_HTTP_BIND_ADDRESS=127.0.0.1:9000
+      - GRAYLOG_MONGODB_URI=mongodb://127.0.0.1/graylog
+      - GRAYLOG_ELASTICSEARCH_HOSTS=http://127.0.0.1:9200
+    depends_on:
+      - mongodb
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
